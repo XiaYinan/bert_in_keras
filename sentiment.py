@@ -8,11 +8,12 @@ from keras_bert import load_trained_model_from_checkpoint, Tokenizer
 import re, os
 import codecs
 
+TF_KERAS=1
 
 maxlen = 100
-config_path = '../bert/chinese_L-12_H-768_A-12/bert_config.json'
-checkpoint_path = '../bert/chinese_L-12_H-768_A-12/bert_model.ckpt'
-dict_path = '../bert/chinese_L-12_H-768_A-12/vocab.txt'
+config_path = './chinese_L-12_H-768_A-12/bert_config.json'
+checkpoint_path = './chinese_L-12_H-768_A-12/bert_model.ckpt'
+dict_path = './chinese_L-12_H-768_A-12/vocab.txt'
 
 
 token_dict = {}
@@ -38,20 +39,24 @@ class OurTokenizer(Tokenizer):
 tokenizer = OurTokenizer(token_dict)
 
 
-neg = pd.read_excel('neg.xls', header=None)
-pos = pd.read_excel('pos.xls', header=None)
+primitive_data = pd.read_csv('data.csv')
+neg = primitive_data.query('label==0')
+pos = primitive_data.query('label==1')
+
+# neg = pd.read_excel('neg.xls', header=None)
+# pos = pd.read_excel('pos.xls', header=None)
 
 data = []
 
-for d in neg[0]:
+for d in neg['review']:
     data.append((d, 0))
 
-for d in pos[0]:
+for d in pos['review']:
     data.append((d, 1))
 
 
 # 按照9:1的比例划分训练集和验证集
-random_order = range(len(data))
+random_order = list(range(len(data)))
 np.random.shuffle(random_order)
 train_data = [data[j] for i, j in enumerate(random_order) if i % 10 != 0]
 valid_data = [data[j] for i, j in enumerate(random_order) if i % 10 == 0]
@@ -76,7 +81,7 @@ class data_generator:
         return self.steps
     def __iter__(self):
         while True:
-            idxs = range(len(self.data))
+            idxs = list(range(len(self.data)))
             np.random.shuffle(idxs)
             X1, X2, Y = [], [], []
             for i in idxs:
