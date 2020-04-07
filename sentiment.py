@@ -86,6 +86,8 @@ class data_generator:
             X1, X2, Y = [], [], []
             for i in idxs:
                 d = self.data[i]
+                if not isinstance(d[0],str):
+                    continue
                 text = d[0][:maxlen]
                 x1, x2 = tokenizer.encode(first=text)
                 y = d[1]
@@ -133,7 +135,14 @@ valid_D = data_generator(valid_data)
 model.fit_generator(
     train_D.__iter__(),
     steps_per_epoch=len(train_D),
-    epochs=5,
+    epochs=1,
     validation_data=valid_D.__iter__(),
     validation_steps=len(valid_D)
 )
+
+model.save('best_model.h5')
+
+# model.load('best_model.h5')
+# text = "这家“荣耀旅馆”是大阪住宿性价比非常高的一个青旅的选择"
+# x1, x2 = tokenizer.encode(first=text)
+# model.predict([[x1],[x2]])
